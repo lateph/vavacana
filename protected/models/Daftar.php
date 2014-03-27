@@ -13,7 +13,9 @@
 class Daftar extends CActiveRecord
 {
 	public $gambar;
-	public $zip;
+	public $zipIOS;
+	public $zipAndroid;
+
 	/**
 	 * @return string the associated database table name
 	 */
@@ -30,8 +32,8 @@ class Daftar extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('judul, namaGambar, namaZip, mimeGambar, mimeZip', 'length', 'max'=>255),
-			array('tanggal', 'safe'),
+			array('judul, namaGambar, mimeGambar, namaZipIOS, mimeZipIOS, namaZipAndroid, mimeZipAndroid', 'length', 'max'=>255),
+			array('tanggal,diskripsi', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
 			array('id, time, judul, namaGambar, mimeGambar, namaZip ,mimeZip', 'safe', 'on'=>'search'),
@@ -112,13 +114,22 @@ class Daftar extends CActiveRecord
 		return Yii::app()->request->baseUrl.'/files/daftar_images/'.$this->id.'_'.$this->namaGambar;
 	}
 
-	public function getZipPath(){
+	public function getZipIOSPath(){
 		$path = Yii::app()->params['uploadPath'];
-		return $path.'/daftar_zip/'.$this->id.'_'.$this->namaZip;
+		return $path.'/daftar_zip_ios/'.$this->id.'_'.$this->namaZipIOS;
 	}
 
-	public function getZipUrl(){
-		return Yii::app()->request->baseUrl.'/files/daftar_zip/'.$this->id.'_'.$this->namaZip;
+	public function getZipIOSUrl(){
+		return Yii::app()->getBaseUrl(true).'/files/daftar_zip_ios/'.$this->id.'_'.$this->namaZipIOS;
+	}
+
+	public function getZipAndroidPath(){
+		$path = Yii::app()->params['uploadPath'];
+		return $path.'/daftar_zip_android/'.$this->id.'_'.$this->namaZipAndroid;
+	}
+
+	public function getZipAndroidUrl(){
+		return Yii::app()->getBaseUrl(true).'/files/daftar_zip_android/'.$this->id.'_'.$this->namaZipAndroid;
 	}
 
 	public function beforeSave(){
@@ -127,9 +138,13 @@ class Daftar extends CActiveRecord
 				$this->namaGambar = $this->gambar->getName();
 				$this->mimeGambar = $this->gambar->getType();
 			}
-			if($this->zip){
-				$this->namaZip = $this->zip->getName();
-				$this->mimeZip = $this->zip->getType();
+			if($this->zipIOS){
+				$this->namaZipIOS = $this->zipIOS->getName();
+				$this->mimeZipIOS = $this->zipIOS->getType();
+			}
+			if($this->zipAndroid){
+				$this->namaZipAndroid = $this->zipAndroid->getName();
+				$this->mimeZipAndroid = $this->zipAndroid->getType();
 			}
 			$this->time = date('Y-m-d H:i:s');
 		}
@@ -139,10 +154,22 @@ class Daftar extends CActiveRecord
 	public function afterSave(){
 		if($this->isNewRecord){
 			if($this->gambar){
+				if(file_exists($this->getImagePath())){
+					unlink($this->getImagePath());
+				}
 				$this->gambar->saveAs($this->getImagePath());
 			}
-			if($this->zip){
-				$this->zip->saveAs($this->getZipPath());
+			if($this->zipIOS){
+				if(file_exists($this->getZipIOSPath())){
+					unlink($this->getZipIOSPath());
+				}
+				$this->zipIOS->saveAs($this->getZipIOSPath());
+			}
+			if($this->zipAndroid){
+				if(file_exists($this->getZipAndroidPath())){
+					unlink($this->getZipAndroidPath());
+				}
+				$this->zipAndroid->saveAs($this->getZipAndroidPath());
 			}
 		}
 	}
@@ -152,7 +179,9 @@ class Daftar extends CActiveRecord
         $attributes=$this->getAttributes();
         
         $attributes['imageUrl'] = $this->getImageUrl();
-        $attributes['zipUrl'] = $this->getZipUrl();
+
+        $attributes['zipIOSUrl'] = $this->getZipIOSUrl();
+        $attributes['zipAndroidUrl'] = $this->getZipAndroidUrl();
 
         //print_r($attributes);exit;
         return new CMapIterator($attributes);
