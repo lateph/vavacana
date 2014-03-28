@@ -111,7 +111,7 @@ class Daftar extends CActiveRecord
 	}
 
 	public function getImageUrl(){
-		return Yii::app()->request->baseUrl.'/files/daftar_images/'.$this->id.'_'.$this->namaGambar;
+		return Yii::app()->getBaseUrl(true).'/files/daftar_images/'.$this->id.'_'.$this->namaGambar;
 	}
 
 	public function getZipIOSPath(){
